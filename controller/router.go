@@ -1,0 +1,107 @@
+package controller
+
+import (
+	"clover/controller/middleware"
+	"clover/model"
+	"clover/pkg/jwt"
+	"clover/pkg/log"
+	"flag"
+	"net/http"
+	"os"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+var accessLog = flag.String("access_log_file", "", "the file record the gin access log(full path)")
+var errorLog = flag.String("error_log_file", "", "the file record the gin error log(full path)")
+
+func InitRouter() *gin.Engine {
+
+	accessWriter := os.Stdout
+	errWriter := os.Stderr
+	if len(*accessLog) > 0 {
+		if file, err := os.Open(*accessLog); err == nil {
+			accessWriter = file
+		}
+	}
+
+	if len(*errorLog) > 0 {
+		if file, err := os.Open(*errorLog); err == nil {
+			errWriter = file
+		}
+	}
+
+	router := gin.New()
+	router.Use(gin.LoggerWithConfig(gin.LoggerConfig{
+		Output: accessWriter,
+	}))
+	router.Use(gin.RecoveryWithWriter(errWriter))
+	router.Use(middleware.Trace)
+
+	router.GET("/hello", HelloHandler)
+
+	v1Group := router.Group("/api/v1")
+	v1Group.POST("/user/signup", UserSignUpHandler)
+	v1Group.POST("/user/login", UserLoginHandler)
+	v1Group.GET("/user/token", UserRefreshTokenHandler)
+
+	v1Group.Use(JWT)
+	{
+		v1Group.POST("/community/create", CommunityCreateHandler)
+		v1Group.GET("/community/list", CommunityListHandler)
+		v1Group.GET("/community/:id", CommunityDetailHandler)
+	}
+
+	router.NoRoute(func(context *gin.Context) {
+		context.String(http.StatusNotFound, "hello boy")
+	})
+
+	return router
+}
+
+const ContextKeyUserID = "_user_id"
+
+func JWT(c *gin.Context) {
+
+	token := c.Request.Header.Get("Authorization")
+	if len(token) == 0 {
+		log.WithCategory("middleware.jwt").Info("JWT: authorization token empty")
+		c.Abort()
+		Error401(c, CodeTokenInvalid)
+		return
+	}
+	contents := strings.Split(token, " ")
+	if !(len(contents) == 2 && contents[0] == "Bearer") {
+		log.WithCategory("middleware.jwt").Info("JWT: Token format error")
+		c.Abort()
+		Error401(c, CodeTokenInvalid)
+		return
+	}
+
+	userId, err := jwt.ParseUserID(contents[1])
+	if err != nil {
+		log.WithCategory("middlwware.jwt").WithError(err).Error("parse userid from token failed")
+		c.Abort()
+		Error401(c, CodeTokenInvalid)
+		return
+	}
+
+	if userId == 0 {
+		log.WithCategory("middlwware.jwt").Info("JWT: invalid user id")
+		c.Abort()
+		Error401(c, CodeTokenInvalid)
+		return
+	}
+
+	user, err := model.QueryUserByUserID(userId)
+	if user == nil || err != nil {
+		log.WithCategory("middleware.jwt").WithError(err).Error("JWT: user not login")
+		c.Abort()
+		Error401(c, CodeTokenInvalid)
+		return
+	}
+
+	c.Set(ContextKeyUserID, userId)
+	c.Next()
+}

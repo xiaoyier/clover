@@ -1,0 +1,20 @@
+EndPoint: 0.0.0.0:8081
+TimeZone: UTC
+MachineID: 0
+
+Mysql:
+  Host: 127.0.0.1:3306
+  User: root
+  Passwd: 920312
+  DB: clover
+  MaxIdleConns: 30
+  MaxOpenConns: 30
+  MaxConnLifeTime: 60
+  DebugMode: true
+
+Redis:
+  Host: 127.0.0.1:6379
+  DB: 0
+  PoolSize: 15
+
+
