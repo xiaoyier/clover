@@ -1,6 +1,8 @@
-package model
+package mysql
 
-import "time"
+import (
+	"time"
+)
 
 func init() {
 	RegisterAutoMigrates(&User{})

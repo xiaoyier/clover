@@ -1,4 +1,4 @@
-package model
+package mysql
 
 import (
 	"clover/pkg/log"

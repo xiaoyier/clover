@@ -1,4 +1,4 @@
-package model
+package redis
 
 import (
 	"clover/pkg/log"

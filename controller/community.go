@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"clover/model"
+	"clover/model/mysql"
 	"clover/pkg/log"
 	"clover/service"
 	"errors"
@@ -14,7 +14,7 @@ func CommunityCreateHandler(c *gin.Context) {
 
 	var (
 		err error
-		req model.CommunityCreateReq
+		req mysql.CommunityCreateReq
 	)
 
 	err = c.ShouldBindJSON(&req)

@@ -15,7 +15,12 @@ const (
 	CodePasswordWrong
 	CodeCommunityExist
 	CodeCommunityEmpty
+	CodePostExisted
+	CodePostUnexist
+	CodePostEmpty
 	CodeTokenInvalid
+
+	CodeRequestLimit
 	CodeServerBusy
 )
 
@@ -26,8 +31,12 @@ var CodeMessageMap = map[ResponseCode]string{
 	CodeUserNotExist:   "user is not exist",
 	CodePasswordWrong:  "password is wrong",
 	CodeCommunityExist: "existed community",
-	CodeCommunityEmpty: "empty community",
+	CodeCommunityEmpty: "empty community list",
+	CodePostExisted:    "existed post",
+	CodePostUnexist:    "unexist post",
+	CodePostEmpty:      "empty post list",
 	CodeTokenInvalid:   "invalid token",
+	CodeRequestLimit:   "request limited",
 	CodeServerBusy:     "server busy",
 }
 

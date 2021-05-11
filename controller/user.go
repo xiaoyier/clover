@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"clover/model"
+	"clover/model/mysql"
 	"clover/pkg/jwt"
 	"clover/pkg/log"
 	"clover/service"
@@ -15,7 +15,7 @@ import (
 func UserSignUpHandler(c *gin.Context) {
 	var (
 		err error
-		req model.UserRegisterReq
+		req mysql.UserRegisterReq
 	)
 
 	err = c.ShouldBind(&req)
@@ -47,7 +47,7 @@ func UserSignUpHandler(c *gin.Context) {
 func UserLoginHandler(c *gin.Context) {
 	var (
 		err error
-		req model.UserLoginReq
+		req mysql.UserLoginReq
 	)
 
 	err = c.ShouldBind(&req)

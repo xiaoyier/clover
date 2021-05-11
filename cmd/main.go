@@ -2,7 +2,8 @@ package main
 
 import (
 	"clover/controller"
-	"clover/model"
+	"clover/model/mysql"
+	"clover/model/redis"
 	"clover/pkg/log"
 	"clover/pkg/snowflake"
 	"clover/setting"
@@ -30,11 +31,11 @@ func main() {
 
 	// init db
 	log.WithCategory("main").Info("Starting DB...")
-	model.InitDB(setting.GetMysqlConfig(), setting.GetTimeZone())
+	mysql.InitDB(setting.GetMysqlConfig(), setting.GetTimeZone())
 
 	// init redis
 	log.WithCategory("main").Info("Starting redis...")
-	model.InitRedis(setting.GetRedisConfig())
+	redis.InitRedis(setting.GetRedisConfig())
 
 	// init snowflake
 	snowflake.Init(setting.GetMachineID())
@@ -62,8 +63,8 @@ func main() {
 			log.WithCategory("main").WithError(err).Error("Shutdown http server error")
 		}
 
-		model.CloseMysql()
-		model.CloseRedis()
+		mysql.CloseMysql()
+		redis.CloseRedis()
 	}()
 
 	err := server.ListenAndServe()

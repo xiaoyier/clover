@@ -1,7 +1,7 @@
 package service
 
 import (
-	"clover/model"
+	"clover/model/mysql"
 	"clover/pkg/jwt"
 	"clover/pkg/log"
 	"clover/pkg/snowflake"
@@ -11,13 +11,14 @@ import (
 )
 
 var ErrorDBHandle = errors.New("mysql handle error")
+var ErrorRedisHandle = errors.New("redis handle error")
 var ErrorUserExist = errors.New("user exists")
 var ErrorUserNotExist = errors.New("user is not existed")
 var ErrorPasswordWrong = errors.New("wrong password")
 
-func CreateUser(u *model.UserRegisterReq) error {
+func CreateUser(u *mysql.UserRegisterReq) error {
 
-	user, err := model.QueryUserByUserName(u.UserName)
+	user, err := mysql.QueryUserByUserName(u.UserName)
 	if err != nil {
 		log.WithCategory("service.user").WithError(err).Error("CreateUser: query user failed")
 		return ErrorDBHandle
@@ -35,7 +36,7 @@ func CreateUser(u *model.UserRegisterReq) error {
 		return ErrorDBHandle
 	}
 
-	user = &model.User{
+	user = &mysql.User{
 		UserName:   u.UserName,
 		UserPasswd: MD5Encrypt(u.Password),
 		UserID:     int64(userId),
@@ -49,10 +50,10 @@ func CreateUser(u *model.UserRegisterReq) error {
 	return nil
 }
 
-func Login(u *model.UserLoginReq) (rsp *model.UserLoginRsp, err error) {
+func Login(u *mysql.UserLoginReq) (rsp *mysql.UserLoginRsp, err error) {
 
 	// query if not exist user
-	user, err := model.QueryUserByUserName(u.UserName)
+	user, err := mysql.QueryUserByUserName(u.UserName)
 	if user == nil {
 		log.WithCategory("service.user").Info("Login: user not existed: ", u.UserName)
 		return rsp, ErrorUserNotExist
@@ -76,7 +77,7 @@ func Login(u *model.UserLoginReq) (rsp *model.UserLoginRsp, err error) {
 		return rsp, err
 	}
 
-	return &model.UserLoginRsp{
+	return &mysql.UserLoginRsp{
 		UserID:       user.UserID,
 		UserName:     user.UserName,
 		LoginToken:   login,
