@@ -56,9 +56,10 @@ func InitRouter() *gin.Engine {
 		v1Group.GET("/community/:id", CommunityDetailHandler)
 
 		v1Group.POST("/post", PostCreateHandler)
-		v1Group.GET("post/:id", PostDetailHandler)
-		v1Group.GET("post/list", PostListHandler)
-		v1Group.GET("post/list2", PostListV2Handler)
+		v1Group.GET("/post/:id", PostDetailHandler)
+		v1Group.GET("/post/list", PostListHandler)
+		v1Group.GET("/post/list2", PostListV2Handler)
+		v1Group.GET("/post/list2/:community_id", PostCommunityListHandler)
 	}
 
 	router.NoRoute(func(context *gin.Context) {

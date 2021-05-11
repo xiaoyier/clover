@@ -2,6 +2,7 @@ package redis
 
 import (
 	"clover/model/mysql"
+	"clover/pkg/log"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -82,9 +83,40 @@ func GetPostList(order string, page *mysql.PostListPage) []map[string]string {
 	return result
 }
 
-func GetCommunityPostList(order string, communityId string, page *mysql.PostListPage) {
+func GetPostListByKey(key string, page *mysql.PostListPage) []map[string]string {
+	start := page.PageNumber * page.PageSize
+	end := (page.PageNumber+1)*page.PageSize - 1
+	ids := redisClient.ZRevRange(redisClient.Context(), key, int64(start), int64(end)).Val()
+
+	result := make([]map[string]string, len(ids))
+	for i, id := range ids {
+		infoKey := RedisKeyPostInfoPrefix + id
+		info := redisClient.HGetAll(redisClient.Context(), infoKey).Val()
+		result[i] = info
+	}
+
+	return result
+}
+
+func GetCommunityPostList(order string, communityId string, page *mysql.PostListPage) []map[string]string {
 
 	//redisClient.Z
-	//communityKey := RedisKeyCommunityPostPrefix + communityId
+	communityKey := RedisKeyCommunityPostPrefix + communityId
+	orderKey := RedisKeyPostTime
+	if order == "score" {
+		orderKey = RedisKeyPostScore
+	}
 	//redisClient
+	key := communityId + order
+	if redisClient.Exists(redisClient.Context(), key).Val() < 1 {
+		redisClient.ZInterStore(redisClient.Context(), key, &redis.ZStore{
+			Keys:      []string{communityKey, orderKey},
+			Aggregate: "SUM",
+		})
+	}
+	redisClient.Expire(redisClient.Context(), key, time.Second*60)
+	members := redisClient.SMembers(redisClient.Context(), key).Val()
+	log.WithCategory("redis.post").Debugf("GetCommunityPostList: members is %v", members)
+
+	return GetPostListByKey(key, page)
 }

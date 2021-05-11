@@ -15,5 +15,6 @@ require (
 	github.com/sirupsen/logrus v1.2.0
 	github.com/sony/sonyflake v1.0.0
 	github.com/spf13/viper v1.7.1
+	go.opentelemetry.io/otel v0.20.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
 )

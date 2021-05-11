@@ -42,6 +42,11 @@ func PostCreateHandler(c *gin.Context) {
 		return
 	}
 
+	if errors.Is(err, service.ErrorCommunityEmpty) {
+		Error(c, CodeCommunityEmpty)
+		return
+	}
+
 	if err != nil {
 		Error(c, CodeServerBusy)
 		return
@@ -114,5 +119,72 @@ func PostListHandler(c *gin.Context) {
 }
 
 func PostListV2Handler(c *gin.Context) {
+	var (
+		page mysql.PostListPage
+		err  error
+		rsp  []map[string]string
+	)
 
+	page = mysql.PostListPage{
+		PageSize:   20,
+		PageNumber: 0,
+	}
+	err = c.BindQuery(&page)
+	if err != nil {
+		log.WithCategory("post").WithError(err).Info("PostListHandler: invalid params")
+		Error400(c, CodeParamInvalid)
+		return
+	}
+
+	rsp, err = service.GetPostList2(c.Query("order"), &page)
+	if errors.Is(err, service.ErrorPostEmpty) {
+		Error(c, CodePostEmpty)
+		return
+	}
+
+	if err != nil {
+		Error(c, CodeServerBusy)
+		return
+	}
+
+	Succ(c, rsp)
+}
+
+func PostCommunityListHandler(c *gin.Context) {
+
+	var (
+		page mysql.PostListPage
+		err  error
+		rsp  []map[string]string
+	)
+
+	page = mysql.PostListPage{
+		PageSize:   20,
+		PageNumber: 0,
+	}
+	err = c.BindQuery(&page)
+	if err != nil {
+		log.WithCategory("post").WithError(err).Info("PostListHandler: invalid params")
+		Error400(c, CodeParamInvalid)
+		return
+	}
+
+	communityId, ok := c.Params.Get("community_id")
+	if !ok {
+		log.WithCategory("post").WithError(err).Info("PostListHandler: communityID error")
+		Error400(c, CodeParamInvalid)
+		return
+	}
+	rsp, err = service.GetPostCommunityList(c.Query("order"), communityId, &page)
+	if errors.Is(err, service.ErrorPostEmpty) {
+		Error(c, CodePostEmpty)
+		return
+	}
+
+	if err != nil {
+		Error(c, CodeServerBusy)
+		return
+	}
+
+	Succ(c, rsp)
 }

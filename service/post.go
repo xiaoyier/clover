@@ -17,6 +17,23 @@ var ErrorPostEmpty = errors.New("post list empty")
 
 func CreatePost(post *mysql.PostCreateReq, author int64) (*mysql.Post, error) {
 
+	// query authorName & communityName
+	user, err := mysql.QueryUserByUserID(author)
+	if err != nil {
+		log.WithCategory("service.post").WithError(err).Error("CreatePost: query user error")
+		return nil, ErrorDBHandle
+	}
+
+	community, err := mysql.QueryCommunityByID(post.CommunityID)
+	if community == nil {
+		log.WithCategory("service.post").WithError(err).Error("CreatePost: empty community")
+		return nil, ErrorCommunityEmpty
+	}
+	if err != nil {
+		log.WithCategory("service.post").WithError(err).Error("CreatePost: query community error")
+		return nil, ErrorDBHandle
+	}
+
 	postId := snowflake.GenSnowflakeID()
 	p := &mysql.Post{
 		PostID:      int64(postId),
@@ -26,7 +43,7 @@ func CreatePost(post *mysql.PostCreateReq, author int64) (*mysql.Post, error) {
 		CommunityID: post.CommunityID,
 	}
 
-	err := p.Insert()
+	err = p.Insert()
 	if sqlError, ok := err.(*gormMysql.MySQLError); ok {
 		if sqlError.Number == 1062 {
 			log.WithCategory("service.post").WithError(sqlError).Info("CreatePost: dumplicate post")
@@ -35,19 +52,6 @@ func CreatePost(post *mysql.PostCreateReq, author int64) (*mysql.Post, error) {
 	}
 	if err != nil {
 		log.WithCategory("service.post").WithError(err).Error("CreatePost: insert post error")
-		return nil, ErrorDBHandle
-	}
-
-	// query authorName & communityName
-	user, err := mysql.QueryUserByUserID(author)
-	if err != nil {
-		log.WithCategory("service.post").WithError(err).Error("CreatePost: query user error")
-		return nil, ErrorDBHandle
-	}
-
-	community, err := mysql.QueryCommunityByID(post.CommunityID)
-	if err != nil {
-		log.WithCategory("service.post").WithError(err).Error("CreatePost: query community error")
 		return nil, ErrorDBHandle
 	}
 
@@ -91,13 +95,13 @@ func GetPostList(page *mysql.PostListPage) ([]mysql.PostItem, error) {
 			communityName string
 			result        mysql.PostItem
 		)
-		author, err := mysql.QueryUserByUserID(item.AuthorID)
-		if err == nil {
+		author, _ := mysql.QueryUserByUserID(item.AuthorID)
+		if author != nil {
 			authorName = author.UserName
 		}
 
-		community, err := mysql.QueryCommunityByID(item.CommunityID)
-		if err == nil {
+		community, _ := mysql.QueryCommunityByID(item.CommunityID)
+		if community != nil {
 			communityName = community.CommunityName
 		}
 
@@ -114,6 +118,28 @@ func GetPostList(page *mysql.PostListPage) ([]mysql.PostItem, error) {
 	}
 
 	return postList, nil
+}
+
+func GetPostList2(orderKey string, page *mysql.PostListPage) ([]map[string]string, error) {
+
+	items := redis.GetPostList(orderKey, page)
+	if items == nil || len(items) == 0 {
+		log.WithCategory("service.post").Info("GetPostList: empty post list")
+		return nil, ErrorPostEmpty
+	}
+
+	return items, nil
+}
+
+func GetPostCommunityList(orderKey string, communityId string, page *mysql.PostListPage) ([]map[string]string, error) {
+
+	items := redis.GetCommunityPostList(orderKey, communityId, page)
+	if items == nil || len(items) == 0 {
+		log.WithCategory("service.post").Info("GetPostCommunityList: empty post list")
+		return nil, ErrorPostEmpty
+	}
+
+	return items, nil
 }
 
 type PostDetail struct {
