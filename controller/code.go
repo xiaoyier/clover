@@ -18,8 +18,11 @@ const (
 	CodePostExisted
 	CodePostUnexist
 	CodePostEmpty
-	CodeTokenInvalid
+	CodeVoteExpired
+	CodeVoted
+	CodeCommentEmpty
 
+	CodeTokenInvalid
 	CodeRequestLimit
 	CodeServerBusy
 )
@@ -35,6 +38,9 @@ var CodeMessageMap = map[ResponseCode]string{
 	CodePostExisted:    "existed post",
 	CodePostUnexist:    "unexist post",
 	CodePostEmpty:      "empty post list",
+	CodeVoteExpired:    "vote expired",
+	CodeVoted:          "already voted",
+	CodeCommentEmpty:   "empty comment",
 	CodeTokenInvalid:   "invalid token",
 	CodeRequestLimit:   "request limited",
 	CodeServerBusy:     "server busy",

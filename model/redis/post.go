@@ -25,7 +25,7 @@ const (
 
 func CreatePost(info *PostInfo) error {
 
-	now := time.Now().Unix()
+	now := time.Now().UnixNano()
 	pipeline := redisClient.TxPipeline()
 	pipeline.ZAdd(redisClient.Context(), RedisKeyPostTime, &redis.Z{
 		Member: info.PostID,
