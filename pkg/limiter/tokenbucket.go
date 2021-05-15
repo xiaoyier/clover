@@ -13,7 +13,7 @@ var (
 func Init(capacity int64) *Bucket {
 
 	once.Do(func() {
-		bucket = NewBucketWithQuantum(time.Second*1, capacity, 1)
+		bucket = NewBucketWithQuantum(time.Millisecond, capacity, 1)
 	})
 
 	return bucket

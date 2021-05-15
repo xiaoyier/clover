@@ -5,10 +5,13 @@ import (
 	"clover/pkg/jwt"
 	"clover/pkg/limiter"
 	"clover/pkg/log"
+	"clover/setting"
 	"flag"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/gin-contrib/pprof"
 
 	"github.com/hashicorp/go-uuid"
 
@@ -35,7 +38,7 @@ func InitRouter() *gin.Engine {
 	}
 
 	router := gin.New()
-	router.Use(Limit(1))
+	//router.Use(Limit(1000000))
 	router.Use(gin.LoggerWithConfig(gin.LoggerConfig{
 		Output: accessWriter,
 	}))
@@ -65,6 +68,10 @@ func InitRouter() *gin.Engine {
 
 		v1Group.POST("/comment", CommentCreateHandler)
 		v1Group.GET("/comment/:post_id", CommentListHandler)
+	}
+
+	if setting.GetMysqlConfig().DebugMode {
+		pprof.Register(router)
 	}
 
 	router.NoRoute(func(context *gin.Context) {
@@ -128,7 +135,7 @@ func Limit(capacity int64) gin.HandlerFunc {
 	}
 
 	return func(context *gin.Context) {
-		count := bucket.TakeAvailable(1)
+		count := bucket.TakeAvailable(capacity)
 		if count < 1 {
 			log.WithCategory("controller.router").Error("Limit: limited")
 			context.Abort()

@@ -1,0 +1,26 @@
+time="2021-05-11T16:22:23+08:00" level=info msg="Starting server..." category=main
+time="2021-05-11T16:22:23+08:00" level=info msg="Starting DB..." category=main
+time="2021-05-11T16:22:23+08:00" level=info msg="Starting redis..." category=main
+time="2021-05-11T16:22:23+08:00" level=info msg="Starting router..." category=main
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /hello                    --> clover/controller.HelloHandler (5 handlers)
+[GIN-debug] POST   /api/v1/user/signup       --> clover/controller.UserSignUpHandler (5 handlers)
+[GIN-debug] POST   /api/v1/user/login        --> clover/controller.UserLoginHandler (5 handlers)
+[GIN-debug] GET    /api/v1/user/token        --> clover/controller.UserRefreshTokenHandler (5 handlers)
+[GIN-debug] POST   /api/v1/community/create  --> clover/controller.CommunityCreateHandler (6 handlers)
+[GIN-debug] GET    /api/v1/community/list    --> clover/controller.CommunityListHandler (6 handlers)
+[GIN-debug] GET    /api/v1/community/:id     --> clover/controller.CommunityDetailHandler (6 handlers)
+[GIN-debug] POST   /api/v1/post              --> clover/controller.PostCreateHandler (6 handlers)
+[GIN-debug] GET    /api/v1/post/:id          --> clover/controller.PostDetailHandler (6 handlers)
+[GIN-debug] GET    /api/v1/post/list         --> clover/controller.PostListHandler (6 handlers)
+[GIN-debug] GET    /api/v1/post/list2        --> clover/controller.PostListV2Handler (6 handlers)
+[GIN-debug] GET    /api/v1/post/list2/:community_id --> clover/controller.PostCommunityListHandler (6 handlers)
+[GIN-debug] POST   /api/v1/vote              --> clover/controller.VoteHandler (6 handlers)
+[GIN-debug] POST   /api/v1/comment           --> clover/controller.CommentCreateHandler (6 handlers)
+[GIN-debug] GET    /api/v1/comment/:post_id  --> clover/controller.CommentListHandler (6 handlers)
+time="2021-05-11T16:22:32+08:00" level=info msg="Catched the signalterminated" category=main
+time="2021-05-11T16:22:32+08:00" level=error msg="Server stopping..." category=main error="http: Server closed"
+time="2021-05-11T16:22:32+08:00" level=info msg="Server Stopped..." category=main
